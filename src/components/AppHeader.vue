@@ -37,9 +37,13 @@
         <div class="ml-3 relative">
           <div>
             <button
-              class="max-w-xs flex items-center text-sm rounded-full focus:outline-none focus:shadow-outline"
+              class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-300 mr-2"
             >
-              <img class="h-8 w-8 rounded-full" src="../assets/avatar.jpg" alt />
+              <span class="text-sm font-bold leading-none text-black">
+                {{
+                letters
+                }}
+              </span>
             </button>
           </div>
 
@@ -49,6 +53,7 @@
                 href="#"
                 id="sign-out"
                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition ease-in-out duration-150"
+                @click="logout"
               >Sign out</a>
             </div>
           </div>
@@ -57,6 +62,50 @@
     </div>
   </section>
 </template>
+
+
+<script>
+import gql from "graphql-tag";
+// import prop from "propper";
+import { onLogout } from "../vue-apollo";
+
+export default {
+  name: "AppHeader",
+  apollo: {
+    me: gql`
+      {
+        me {
+          id
+          email
+          firstName
+          lastName
+        }
+      }
+    `
+  },
+  computed: {
+    letters() {
+      return (
+        (this.me.firstName ? this.me.firstName[0].toUpperCase() : "?") +
+        (this.me.lastName ? this.me.lastName[0].toUpperCase() : "")
+      );
+    }
+  },
+  methods: {
+    containsActive(item) {
+      const route = this.$route;
+      return (
+        (item && item == route.name) ||
+        (item.route && item.route.name == route.name) ||
+        (item.children || []).some(child => this.containsRoute(child))
+      );
+    },
+    logout() {
+      onLogout(this.$apollo.provider.clients.defaultClient);
+    }
+  }
+};
+</script>
 
 <style scoped>
 /* slide */

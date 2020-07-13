@@ -10,6 +10,8 @@ import PageTemplate from '../views/PageTemplate.vue'
 import Signin from '../views/Signin.vue'
 import Signup from '../views/Signup.vue'
 
+import jwtDecode from 'jwt-decode'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -113,6 +115,29 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+setTimeout(() => {
+  const token = sessionStorage.getItem('apollo-token')
+  if (!token) return
+
+  const decoded = jwtDecode(token)
+
+  if (decoded.exp * 1000 < Date.now()) {
+    console.log('token expired')
+    sessionStorage.removeItem('apollo-token')
+    router.replace({ name: 'Signin' })
+  }
+}, 10)
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !sessionStorage.getItem('apollo-token')) {
+    next({ name: 'Signin' })
+  } else {
+    next()
+  }
+
+  window.scrollTo(0, 0)
 })
 
 router.afterEach(to => {
